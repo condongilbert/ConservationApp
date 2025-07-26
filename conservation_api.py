@@ -27,5 +27,13 @@ def submit_effort():
 def get_efforts():
     return jsonify(efforts_db), 200
 
+# ...existing code...
+
+@app.route('/', methods=['GET'])
+def home():
+    return "Welcome to the Conservation Efforts API. Use /submit_effort to submit data and /get_efforts to view efforts.", 200
+
+# ...existing code...
+
 if __name__ == '__main__':
     app.run(debug=True)
