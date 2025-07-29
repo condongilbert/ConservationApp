@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify,render_template_string
 
 app = Flask(__name__)
 
@@ -34,6 +34,55 @@ def home():
     return "Welcome to the Conservation Efforts API. Use /submit_effort to submit data and /get_efforts to view efforts.", 200
 
 # ...existing code...
+
+# Simple HTML form for submitting efforts
+form_html = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Submit Conservation Effort</title>
+</head>
+<body>
+    <h2>Submit Conservation Effort</h2>
+    <form method="post" action="/submit_effort_form">
+        <label>User:</label><br>
+        <input type="text" name="user" required><br>
+        <label>Effort Type:</label><br>
+        <input type="text" name="effort_type" required><br>
+        <label>Description:</label><br>
+        <textarea name="description" required></textarea><br><br>
+        <input type="submit" value="Submit">
+    </form>
+    <br>
+    <a href="/view_efforts">View All Efforts</a>
+</body>
+</html>
+"""
+
+@app.route('/submit_effort_form', methods=['GET', 'POST'])
+def submit_effort_form():
+    if request.method == 'POST':
+        user = request.form.get('user')
+        effort_type = request.form.get('effort_type')
+        description = request.form.get('description')
+        if not user or not effort_type or not description:
+            return "All fields are required.", 400
+        effort = {
+            'user': user,
+            'effort_type': effort_type,
+            'description': description
+        }
+        efforts_db.append(effort)
+        return "Effort submitted successfully! <a href='/submit_effort_form'>Submit another</a> | <a href='/view_efforts'>View Efforts</a>"
+    return render_template_string(form_html)
+
+@app.route('/view_efforts')
+def view_efforts():
+    html = "<h2>All Conservation Efforts</h2><ul>"
+    for effort in efforts_db:
+        html += f"<li><b>{effort['user']}</b>: {effort['effort_type']} - {effort['description']}</li>"
+    html += "</ul><a href='/submit_effort_form'>Submit New Effort</a>"
+    return html
 
 if __name__ == '__main__':
     app.run(debug=True)
