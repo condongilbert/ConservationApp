@@ -1,11 +1,19 @@
 from flask import Flask, request, jsonify,render_template_string
-
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 app = Flask(__name__)
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["100 per hour"]  # Adjust as needed
+)
 
 # In-memory database to store user efforts
 efforts_db = []
 
 @app.route('/submit_effort', methods=['POST'])
+@limiter.limit("10 per minute")  # Limit to 10 submissions per minute per IP
 def submit_effort():
     data = request.json
     user = data.get('user')
@@ -60,6 +68,7 @@ form_html = """
 """
 
 @app.route('/submit_effort_form', methods=['GET', 'POST'])
+@limiter.limit("10 per minute")  # Limit to 10 submissions per minute per IP
 def submit_effort_form():
     if request.method == 'POST':
         user = request.form.get('user')
